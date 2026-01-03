@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MangaKatana Chapter Watchlist",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Track your favorite manga on MangaKatana and get notified of new chapters",
   "browser_specific_settings": {
     "gecko": {
