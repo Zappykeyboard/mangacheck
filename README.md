@@ -1,5 +1,7 @@
 # MangaKatana Chapter Watchlist
 
+vibecoded. DO NOT USE
+
 A Firefox extension (Manifest V3) that monitors your favorite manga on MangaKatana for new chapters and sends notifications when they're available.
 
 ## Features
