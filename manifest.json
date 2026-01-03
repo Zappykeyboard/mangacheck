@@ -8,6 +8,9 @@
       "id": "mangakatana-watchlist@example.com"
     }
   },
+   "data_collection_permissions": {
+    "required": false
+  },
   "permissions": [
     "storage",
     "alarms",
