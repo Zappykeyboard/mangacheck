@@ -219,6 +219,32 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Test notification button
+document.getElementById('test-notif-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('test-notif-btn');
+  btn.disabled = true;
+
+  try {
+    const response = await browser.runtime.sendMessage({ type: 'TEST_NOTIFICATION' });
+
+    if (response.success) {
+      console.log('Test notification sent!');
+      // Visual feedback
+      btn.textContent = '✅';
+      setTimeout(() => {
+        btn.textContent = '🔔';
+        btn.disabled = false;
+      }, 1000);
+    } else {
+      throw new Error(response.error || 'Failed to send test notification');
+    }
+  } catch (error) {
+    console.error('Test notification failed:', error);
+    alert('Failed to send test notification: ' + error.message);
+    btn.disabled = false;
+  }
+});
+
 // Refresh button
 document.getElementById('refresh-btn').addEventListener('click', async () => {
   const btn = document.getElementById('refresh-btn');

@@ -71,6 +71,13 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'TEST_NOTIFICATION') {
+    testNotification()
+      .then(() => sendResponse({ success: true }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
   // Unknown message type
   console.warn('Unknown message type:', message.type);
   sendResponse({ success: false, error: 'Unknown message type' });
@@ -108,6 +115,40 @@ async function checkWatchlistStatus(data) {
   } catch (error) {
     console.error('Error checking watchlist status:', error);
     return { inWatchlist: false, error: error.message };
+  }
+}
+
+// Test notification function
+async function testNotification() {
+  console.log('Testing notification...');
+
+  try {
+    const { createChapterNotification } = await import('./notification-manager.js');
+
+    // Create a test notification
+    await createChapterNotification(
+      'test-manga-123',
+      'Shangri-La Frontier',
+      [
+        {
+          number: 'Chapter 249',
+          title: 'Chapter 249: The Epic Battle',
+          url: 'https://mangakatana.com',
+          date: 'Today'
+        },
+        {
+          number: 'Chapter 250',
+          title: 'Chapter 250: Victory!',
+          url: 'https://mangakatana.com',
+          date: 'Today'
+        }
+      ]
+    );
+
+    console.log('Test notification created successfully!');
+  } catch (error) {
+    console.error('Failed to create test notification:', error);
+    throw error;
   }
 }
 
