@@ -1,0 +1,47 @@
+/* Styles for the watchlist button on MangaKatana pages */
+
+#manga-watchlist-button,
+.watchlist-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  display: inline-block;
+}
+
+#manga-watchlist-button:hover,
+.watchlist-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+#manga-watchlist-button:active,
+.watchlist-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#manga-watchlist-button:disabled,
+.watchlist-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#manga-watchlist-button[data-in-watchlist="true"],
+.watchlist-btn[data-in-watchlist="true"] {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+#manga-watchlist-button[data-in-watchlist="true"]:hover,
+.watchlist-btn[data-in-watchlist="true"]:hover {
+  background: linear-gradient(135deg, #0d8075 0%, #2dd36f 100%);
+}
