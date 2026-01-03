@@ -5,11 +5,11 @@
   "description": "Track your favorite manga on MangaKatana and get notified of new chapters",
   "browser_specific_settings": {
     "gecko": {
-      "id": "mangakatana-watchlist@example.com"
+      "id": "mangakatana-watchlist@example.com",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
-  },
-   "data_collection_permissions": {
-    "required": false
   },
   "permissions": [
     "storage",
@@ -20,14 +20,22 @@
     "https://mangakatana.com/*"
   ],
   "background": {
-    "scripts": ["background/service-worker.js"],
+    "scripts": [
+      "background/service-worker.js"
+    ],
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://mangakatana.com/manga/*"],
-      "js": ["content/content-script.js"],
-      "css": ["content/content-styles.css"],
+      "matches": [
+        "https://mangakatana.com/manga/*"
+      ],
+      "js": [
+        "content/content-script.js"
+      ],
+      "css": [
+        "content/content-styles.css"
+      ],
       "run_at": "document_idle"
     }
   ],

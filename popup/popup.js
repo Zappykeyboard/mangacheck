@@ -3,21 +3,23 @@
 import { formatRelativeTime } from '../lib/utils.js';
 
 // Tab management
-const tabs = document.querySelectorAll('.tab');
-const tabContents = document.querySelectorAll('.tab-content');
+function initializeTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
 
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    const tabName = tab.dataset.tab;
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
 
-    // Update active states
-    tabs.forEach(t => t.classList.remove('active'));
-    tabContents.forEach(tc => tc.classList.remove('active'));
+      // Update active states
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
 
-    tab.classList.add('active');
-    document.getElementById(`${tabName}-tab`).classList.add('active');
+      tab.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+    });
   });
-});
+}
 
 // Load data on popup open
 async function loadData() {
@@ -76,28 +78,67 @@ function createNewChaptersCard(mangaId, chapters, manga) {
   const title = manga ? manga.title : 'Unknown Manga';
   const mangaUrl = manga ? manga.url : '#';
 
-  card.innerHTML = `
-    <div class="manga-header">
-      <h3 class="manga-title">${escapeHtml(title)}</h3>
-      <span class="new-badge">${chapters.length} new</span>
-    </div>
-    <div class="chapter-list">
-      ${chapters.map(ch => `
-        <a href="${escapeHtml(ch.url)}" class="chapter-item" target="_blank">
-          <span class="chapter-title">${escapeHtml(ch.title)}</span>
-          <span class="chapter-date">${escapeHtml(ch.date)}</span>
-        </a>
-      `).join('')}
-    </div>
-    <div class="manga-actions">
-      <button class="btn-mark-read" data-manga-id="${mangaId}">Mark as Read</button>
-      <a href="${escapeHtml(mangaUrl)}" class="btn-view" target="_blank">View Manga</a>
-    </div>
-  `;
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'manga-header';
 
-  // Add mark as read handler
-  const markReadBtn = card.querySelector('.btn-mark-read');
+  const titleEl = document.createElement('h3');
+  titleEl.className = 'manga-title';
+  titleEl.textContent = title;
+
+  const badge = document.createElement('span');
+  badge.className = 'new-badge';
+  badge.textContent = `${chapters.length} new`;
+
+  header.appendChild(titleEl);
+  header.appendChild(badge);
+
+  // Create chapter list
+  const chapterList = document.createElement('div');
+  chapterList.className = 'chapter-list';
+
+  chapters.forEach(ch => {
+    const chapterLink = document.createElement('a');
+    chapterLink.href = ch.url;
+    chapterLink.className = 'chapter-item';
+    chapterLink.target = '_blank';
+
+    const chapterTitle = document.createElement('span');
+    chapterTitle.className = 'chapter-title';
+    chapterTitle.textContent = ch.title;
+
+    const chapterDate = document.createElement('span');
+    chapterDate.className = 'chapter-date';
+    chapterDate.textContent = ch.date;
+
+    chapterLink.appendChild(chapterTitle);
+    chapterLink.appendChild(chapterDate);
+    chapterList.appendChild(chapterLink);
+  });
+
+  // Create actions
+  const actions = document.createElement('div');
+  actions.className = 'manga-actions';
+
+  const markReadBtn = document.createElement('button');
+  markReadBtn.className = 'btn-mark-read';
+  markReadBtn.dataset.mangaId = mangaId;
+  markReadBtn.textContent = 'Mark as Read';
   markReadBtn.addEventListener('click', () => markAsRead(mangaId));
+
+  const viewLink = document.createElement('a');
+  viewLink.href = mangaUrl;
+  viewLink.className = 'btn-view';
+  viewLink.target = '_blank';
+  viewLink.textContent = 'View Manga';
+
+  actions.appendChild(markReadBtn);
+  actions.appendChild(viewLink);
+
+  // Assemble card
+  card.appendChild(header);
+  card.appendChild(chapterList);
+  card.appendChild(actions);
 
   return card;
 }
@@ -138,29 +179,76 @@ function createWatchlistCard(manga) {
     ? formatRelativeTime(manga.lastChecked)
     : 'Never';
 
-  card.innerHTML = `
-    <div class="manga-header">
-      <h3 class="manga-title">${escapeHtml(manga.title)}</h3>
-    </div>
-    <div class="manga-info">
-      <div class="info-row">
-        <span class="label">Latest:</span>
-        <span class="value">${escapeHtml(manga.latestChapter?.title || 'Unknown')}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Last checked:</span>
-        <span class="value">${lastChecked}</span>
-      </div>
-    </div>
-    <div class="manga-actions">
-      <a href="${escapeHtml(manga.url)}" class="btn-view" target="_blank">View Manga</a>
-      <button class="btn-remove" data-manga-id="${manga.id}">Remove</button>
-    </div>
-  `;
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'manga-header';
 
-  // Add remove handler
-  const removeBtn = card.querySelector('.btn-remove');
+  const titleEl = document.createElement('h3');
+  titleEl.className = 'manga-title';
+  titleEl.textContent = manga.title;
+
+  header.appendChild(titleEl);
+
+  // Create info section
+  const info = document.createElement('div');
+  info.className = 'manga-info';
+
+  // Latest chapter row
+  const latestRow = document.createElement('div');
+  latestRow.className = 'info-row';
+
+  const latestLabel = document.createElement('span');
+  latestLabel.className = 'label';
+  latestLabel.textContent = 'Latest:';
+
+  const latestValue = document.createElement('span');
+  latestValue.className = 'value';
+  latestValue.textContent = manga.latestChapter?.title || 'Unknown';
+
+  latestRow.appendChild(latestLabel);
+  latestRow.appendChild(latestValue);
+
+  // Last checked row
+  const checkedRow = document.createElement('div');
+  checkedRow.className = 'info-row';
+
+  const checkedLabel = document.createElement('span');
+  checkedLabel.className = 'label';
+  checkedLabel.textContent = 'Last checked:';
+
+  const checkedValue = document.createElement('span');
+  checkedValue.className = 'value';
+  checkedValue.textContent = lastChecked;
+
+  checkedRow.appendChild(checkedLabel);
+  checkedRow.appendChild(checkedValue);
+
+  info.appendChild(latestRow);
+  info.appendChild(checkedRow);
+
+  // Create actions
+  const actions = document.createElement('div');
+  actions.className = 'manga-actions';
+
+  const viewLink = document.createElement('a');
+  viewLink.href = manga.url;
+  viewLink.className = 'btn-view';
+  viewLink.target = '_blank';
+  viewLink.textContent = 'View Manga';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'btn-remove';
+  removeBtn.dataset.mangaId = manga.id;
+  removeBtn.textContent = 'Remove';
   removeBtn.addEventListener('click', () => removeFromWatchlist(manga.id));
+
+  actions.appendChild(viewLink);
+  actions.appendChild(removeBtn);
+
+  // Assemble card
+  card.appendChild(header);
+  card.appendChild(info);
+  card.appendChild(actions);
 
   return card;
 }
@@ -210,13 +298,6 @@ function updateLastCheckTime(timestamp) {
 
   const timeStr = formatRelativeTime(timestamp);
   element.textContent = `Last checked: ${timeStr}`;
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // Test notification button
@@ -276,7 +357,10 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
 });
 
 // Initialize
-loadData();
+document.addEventListener('DOMContentLoaded', () => {
+  initializeTabs();
+  loadData();
+});
 
 // Listen for storage changes
 browser.storage.onChanged.addListener((changes, areaName) => {
