@@ -1,6 +1,7 @@
 // Popup UI logic for MangaKatana Watchlist extension
 
 import { formatRelativeTime } from '../lib/utils.js';
+import { getWatchlist, getNewChapters, getSettings } from '../lib/storage-manager.js';
 
 // Tab management
 function initializeTabs() {
@@ -24,14 +25,13 @@ function initializeTabs() {
 // Load data on popup open
 async function loadData() {
   try {
-    const { watchlist, newChapters, settings } = await browser.storage.sync.get([
-      'watchlist',
-      'newChapters',
-      'settings'
-    ]);
+    // Use storage-manager functions to get decompressed data
+    const watchlist = await getWatchlist();
+    const newChapters = await getNewChapters();
+    const settings = await getSettings();
 
-    renderNewChapters(newChapters || {}, watchlist || {});
-    renderWatchlist(watchlist || {});
+    renderNewChapters(newChapters, watchlist);
+    renderWatchlist(watchlist);
     updateLastCheckTime(settings?.lastGlobalCheck);
   } catch (error) {
     console.error('Error loading data:', error);

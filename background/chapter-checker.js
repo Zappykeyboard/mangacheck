@@ -3,7 +3,12 @@
 import { fetchWithRetry } from '../lib/utils.js';
 import { parseChapterList, getNewChaptersFromList } from '../lib/parser.js';
 import { createChapterNotification } from './notification-manager.js';
-import { safeStorageSet } from '../lib/storage-manager.js';
+import { safeStorageSet, getWatchlist, getNewChapters } from '../lib/storage-manager.js';
+import {
+  compressWatchlistEntry,
+  compressChapterEntry,
+  limitNewChapters
+} from '../lib/storage-compression.js';
 
 export async function checkMangaForNewChapters(manga) {
   const { id, url, lastSeenChapter } = manga;
@@ -98,10 +103,12 @@ export async function checkAllManga(watchlist) {
 }
 
 export async function processCheckResults(results) {
-  const { watchlist, newChapters } = await browser.storage.sync.get(['watchlist', 'newChapters']);
+  // Use storage-manager functions to get decompressed data
+  const watchlist = await getWatchlist();
+  const newChapters = await getNewChapters();
 
   const updatedWatchlist = { ...watchlist };
-  const updatedNewChapters = { ...newChapters || {} };
+  const updatedNewChapters = { ...newChapters };
 
   for (const result of results) {
     const { id, latestChapter, newChapters: foundNewChapters, firstCheck, error } = result;
@@ -127,13 +134,15 @@ export async function processCheckResults(results) {
 
     // Store and notify about new chapters
     if (foundNewChapters && foundNewChapters.length > 0) {
-      // Add detected timestamp to each chapter
+      // Add detected timestamp to each chapter and limit to 3
       const chaptersWithTimestamp = foundNewChapters.map(ch => ({
         ...ch,
         detectedAt: Date.now()
       }));
 
-      updatedNewChapters[id] = chaptersWithTimestamp;
+      // Limit to 3 most recent chapters to prevent unbounded storage growth
+      const limitedChapters = limitNewChapters(chaptersWithTimestamp, 3);
+      updatedNewChapters[id] = limitedChapters;
 
       // Send notification
       await createChapterNotification(
@@ -147,11 +156,22 @@ export async function processCheckResults(results) {
     }
   }
 
-  // Save updates using safe storage method
+  // Compress data before storing
+  const compressedWatchlist = {};
+  for (const [id, manga] of Object.entries(updatedWatchlist)) {
+    compressedWatchlist[id] = compressWatchlistEntry(manga);
+  }
+
+  const compressedNewChapters = {};
+  for (const [id, chapters] of Object.entries(updatedNewChapters)) {
+    compressedNewChapters[id] = chapters.map(ch => compressChapterEntry(ch));
+  }
+
+  // Save compressed updates using safe storage method
   await safeStorageSet({
-    watchlist: updatedWatchlist,
-    newChapters: updatedNewChapters
+    watchlist: compressedWatchlist,
+    newChapters: compressedNewChapters
   });
 
-  console.log('Check results processed and saved');
+  console.log('Check results processed and saved (compressed format)');
 }

@@ -1,6 +1,6 @@
 // Manages periodic chapter checking via Firefox alarms API
 
-import { getSettings, updateSettings } from '../lib/storage-manager.js';
+import { getSettings, updateSettings, getWatchlist } from '../lib/storage-manager.js';
 import { checkAllManga, processCheckResults } from './chapter-checker.js';
 
 export async function initializeAlarm() {
@@ -32,7 +32,8 @@ export async function handleAlarm(alarm) {
   console.log('Alarm triggered: checking for new chapters...');
 
   try {
-    const { watchlist } = await browser.storage.sync.get('watchlist');
+    // Get decompressed watchlist
+    const watchlist = await getWatchlist();
 
     if (!watchlist || Object.keys(watchlist).length === 0) {
       console.log('No manga in watchlist, skipping check');
@@ -59,7 +60,8 @@ export async function triggerManualCheck() {
   console.log('Manual check triggered');
 
   try {
-    const { watchlist } = await browser.storage.sync.get('watchlist');
+    // Get decompressed watchlist
+    const watchlist = await getWatchlist();
 
     if (!watchlist || Object.keys(watchlist).length === 0) {
       console.log('No manga in watchlist');
